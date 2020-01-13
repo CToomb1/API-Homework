@@ -1,0 +1,14 @@
+  
+header {
+    font-family: 'Merriweather', serif;
+  }
+  
+  main {
+  font-family: 'Helvetica', sans-serif;
+  }
+  
+  .form-inline {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+  }
