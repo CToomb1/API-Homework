@@ -1,48 +1,59 @@
 var $searchForm = $("#search-form");
 var $searchInput = $("#search-input");
 var $searchedCities = $("#searched-cities");
+var $cityResults = $("#city-results");
 
-function handleFormSubmit(event) {
-  event.preventDefault();
-@@ -12,11 +13,11 @@ function handleFormSubmit(event) {
-    return false;
-  }
+var cities = [];
 
-  var queryUrl = `https://cors-anywhere.herokuapp.com/http://api.openweathermap.org/data/2.5/weather?q=${searchTerm}&appid=bb2771f5bb681a2a7b1c9f5f413832a1&units=imperial`;
-  var queryURL = `https://cors-anywhere.herokuapp.com/http://api.openweathermap.org/data/2.5/weather?q=${searchTerm}&appid=bb2771f5bb681a2a7b1c9f5f413832a1&units=imperial`;
+function printArr(weatherArr, cityName) {
+    for (var i = 0; i < weatherArr.length; i++) {
+        console.log(cityName);
+        console.log(weatherArr);
 
-  // make our search with AJAX
-  $.ajax({
-    url: queryUrl,
-    url: queryURL,
-    method: "GET"
-  }).then(function(response) {
-    console.log(response);
-@@ -26,10 +27,26 @@ function handleFormSubmit(event) {
-      "Weather: " + response.weather[0].description
-    );
-    $(".humidity").text("Humidity: " + response.main.humidity);
-    $(".temp").text("Temperature (F) " + response.main.temp);
-    $(".temp").text("Temperature (F): " + response.main.temp);
-    $(".wind").text("Wind Speed: " + response.wind.speed);
-  });
+        var $card = $('<div>').addClass('card bg-light text-dark mb-3');
 
+        var $cardBody = $('<div>').addClass('card-body');
+        $cardBody
+            .append(`<p>Temperature (F): ${weatherArr[i].main.temp}</p>`)
+            .append(`<p>Weather: ${weatherArr[i].weather[0].main}</p>`)
+            .append(`<p>Wind: ${weatherArr[i].wind.speed}</p>`);
+
+        $card.append($cardBody);
+
+        $cityResults.append($card);
+    }
+    $(".city").html("<h1>" + cityName + "</h1>");
 }
 
-function handleCitySearchedSubmit(event) {
-  event.preventDefault();
+function handleFormSubmit(event) {
+    event.preventDefault();
 
-  var cities = $searchInput.val();
+    var searchTerm = $searchInput.val();
 
-  localStorage.setItem(cities, "cities");
+    if (!searchTerm) {
+        return false;
+    }
 
-  localStorage.getItem(cities);
+    var queryURL = `https://api.openweathermap.org/data/2.5/forecast?q=${searchTerm}&appid=bb2771f5bb681a2a7b1c9f5f413832a1&units=imperial`;
 
-  $searchedCities.append(cities);
+    $.ajax({
+        url: queryURL,
+        method: "GET"
+    }).then(function (response) {
+        console.log(response);
 
-  console.log(cities);
+        var fiveDayArr = response.list.filter(function (weatherObj) {
+            if (weatherObj.dt_txt.includes('06:00:00')) {
+                return true;
+            }
+            else {
+                return false;
+            };
 
-};
+        });
+
+        printArr(fiveDayArr, response.city.name);
+    });
+}
 
 $searchForm.on("submit", handleFormSubmit);
-$searchedCities.on("submit", handleCitySearchedSubmit);
