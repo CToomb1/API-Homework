@@ -2,13 +2,14 @@ var $searchForm = $("#search-form");
 var $searchInput = $("#search-input");
 var $searchedCities = $("#searched-cities");
 var $cityResults = $("#city-results");
+var currentDay = $(".currentDay");
+
+var today = (moment().format('MMMM Do YYYY'));
 
 var cities = [];
 
 function printArr(weatherArr, cityName) {
     for (var i = 0; i < weatherArr.length; i++) {
-        console.log(cityName);
-        console.log(weatherArr);
 
         var $card = $('<div>').addClass('card bg-light text-dark mb-3');
 
@@ -23,7 +24,6 @@ function printArr(weatherArr, cityName) {
 
         $cityResults.append($card);
     }
-    $(".city").html("<h1>" + cityName + "</h1>");
 }
 
 function handleFormSubmit(event) {
@@ -35,13 +35,31 @@ function handleFormSubmit(event) {
         return false;
     }
 
+    var queryURLOne = `https://cors-anywhere.herokuapp.com/http://api.openweathermap.org/data/2.5/weather?q=${searchTerm}&appid=bb2771f5bb681a2a7b1c9f5f413832a1&units=imperial`;
+
+    $.ajax({
+        url: queryURLOne,
+        method: "GET"
+    }).then(function (response) {
+
+        $(".city").html("<h1>" + response.name + "</h1>");
+        $(".currentDay").text(today);
+        $(".description").text(
+            "Weather: " + response.weather[0].description
+        );
+        $(".humidity").text("Humidity: " + response.main.humidity);
+        $(".temp").text("Temperature (F): " + response.main.temp);
+        $(".wind").text("Wind Speed: " + response.wind.speed);
+
+        printArr()
+    });
+
     var queryURL = `https://api.openweathermap.org/data/2.5/forecast?q=${searchTerm}&appid=bb2771f5bb681a2a7b1c9f5f413832a1&units=imperial`;
 
     $.ajax({
         url: queryURL,
         method: "GET"
     }).then(function (response) {
-        console.log(response);
 
         var fiveDayArr = response.list.filter(function (weatherObj) {
             if (weatherObj.dt_txt.includes('06:00:00')) {
@@ -53,8 +71,8 @@ function handleFormSubmit(event) {
 
         });
 
-        printArr(fiveDayArr, response.city.name);
+        printArr(fiveDayArr);
     });
 }
-
+;
 $searchForm.on("submit", handleFormSubmit);
